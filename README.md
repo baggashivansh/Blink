@@ -1,185 +1,112 @@
 # Blink
 
-A minimal production style URL shortener built with Java and Spring Boot.
+A minimal production style URL shortener built with Spring Boot.
 
-Blink converts long URLs into short, shareable links and redirects users to the original destination instantly.
+Blink converts long and messy URLs into short, clean links that are easier to share and remember. When someone visits the shortened link, the service redirects them to the original destination.
 
-Example:
+This project focuses on building a simple but realistic backend service that mimics how real world link shorteners work.
 
-Long URL
+Example
+
+Original URL
 
 https://example.com/products/electronics/mobile-phones/apple/iphone-15-pro-max?ref=homepage&campaign=spring_sale
 
 Shortened URL
 
-https://blink-backend-mjj3.onrender.com/a7F3x
+https://blink-ozo5.onrender.com/a7F3x
 
-When a user opens the short link, Blink performs a fast redirect to the original URL.
 
----
+--------------------------------------------------
 
-# Live Demo
+Live Demo
 
-https://blink-backend-mjj3.onrender.com
+Backend deployed on Render
 
----
+https://blink-ozo5.onrender.com
 
-# Overview
+Source Code
 
-Blink is a backend focused project designed to demonstrate how URL shortening services such as Bitly or TinyURL work internally.
+https://github.com/baggashivansh/Blink
 
-Although URL shorteners appear simple, they involve several important backend engineering ideas including:
+You can open the live service and generate short URLs directly from the interface.
 
-Unique code generation
-Database indexing
-Fast redirect systems
-REST API design
-Service deployment
 
-Blink implements the core mechanics behind these systems using a clean Spring Boot architecture.
+--------------------------------------------------
 
----
+Why This Project Exists
 
-# Features
+Long URLs are often difficult to share. They contain tracking parameters, deep routing paths, and other metadata that make them unreadable.
 
-## URL Shortening
+A URL shortener solves this by generating a short identifier that maps to the original URL.
 
-Users can submit a long URL and Blink generates a unique short code.
+When a user opens the shortened link, the system performs a lookup and redirects them to the stored destination.
 
-Example
+This project demonstrates how such a system can be implemented using a modern Java backend stack.
 
-Input
+The goal was not just to shorten URLs, but to simulate how a small production style backend service behaves.
 
-https://github.com/shivanshbagga
 
-Output
+--------------------------------------------------
 
-https://blink-backend-mjj3.onrender.com/a8F3x
+How Blink Works
 
-Each short code maps to exactly one original URL.
+At a high level the system follows a simple flow.
 
----
+1. A user submits a long URL to the backend.
+2. The server generates a unique short code.
+3. The mapping between the short code and the original URL is stored.
+4. When someone opens the short link, the service looks up the code and redirects the request.
 
-## Fast Redirect
+The redirect is performed using an HTTP redirect response so the browser automatically navigates to the original page.
 
-When a user visits a shortened link:
+This pattern is used by services like Bitly and TinyURL.
 
-https://blink-backend-mjj3.onrender.com/a8F3x
 
-Blink performs the following steps:
+--------------------------------------------------
 
-1. Extract the short code
-2. Look up the original URL in the database
-3. Redirect the user using HTTP redirect
+System Architecture
 
-This lookup happens in milliseconds.
+Blink follows a simple layered backend architecture.
 
----
-
-## Clean Web Interface
-
-Blink includes a minimal frontend interface where users can:
-
-Paste a long URL
-Generate a short link
-Copy the shortened URL instantly
-
-The frontend is served directly by the Spring Boot server.
-
----
-
-# System Architecture
-
-Blink uses a simple service architecture.
-
-Client
+Client (Browser)
 ↓
-Spring Boot API
+Spring Boot REST Controller
 ↓
-Database
-
-Flow: Creating a Short Link
-
-User → POST /api/shorten
+Service Layer
 ↓
-Validate URL
-↓
-Generate short code
-↓
-Store mapping in database
-↓
-Return short URL
+Repository / Data Storage
 
-Flow: Redirecting
+Each layer has a clear responsibility.
 
-User → GET /{shortCode}
-↓
-Lookup short code in database
-↓
-Redirect to original URL
+Controller layer  
+Handles incoming HTTP requests and exposes API endpoints.
 
----
+Service layer  
+Contains the business logic responsible for generating short codes and processing URLs.
 
-# Technology Stack
+Repository layer  
+Manages persistence and retrieval of URL mappings.
 
-Backend
+This separation keeps the system maintainable and easier to extend.
 
-Java
-Spring Boot
-Spring Web
-Spring Data JPA
 
-Database
+--------------------------------------------------
 
-MySQL
+Features
 
-Deployment
+• Generate shortened URLs  
+• Redirect short links to their original destination  
+• REST API for URL shortening  
+• Simple frontend interface  
+• Static frontend served directly from Spring Boot  
+• Dockerized deployment  
+• Live deployment on Render  
 
-Render
 
-Frontend
+--------------------------------------------------
 
-HTML
-CSS
-Vanilla JavaScript
-
----
-
-# Project Structure
-
-blink
-src
-└─ main
-└─ java
-└─ controller
-└─ service
-└─ repository
-└─ model
-
-resources
-└─ static
-└─ index.html
-
-The static folder allows Spring Boot to serve the frontend directly.
-
----
-
-# Database Design
-
-URL Table
-
-Field | Type | Description
-id | BIGINT | Primary key
-original_url | TEXT | Original long URL
-short_code | VARCHAR | Generated short code
-created_at | TIMESTAMP | Creation time
-click_count | INT | Number of visits
-
-An index on short_code enables fast lookup during redirects.
-
----
-
-# API Endpoints
+API
 
 Create Short URL
 
@@ -188,80 +115,123 @@ POST /api/shorten
 Request
 
 {
-"url": "https://example.com/article"
+  "url": "https://google.com"
 }
 
 Response
 
 {
-"shortUrl": "https://blink-backend-mjj3.onrender.com/a8F3x"
+  "shortUrl": "https://blink-ozo5.onrender.com/abc123"
 }
 
----
 
-Redirect
+--------------------------------------------------
+
+Redirect Endpoint
 
 GET /{shortCode}
 
 Example
 
-GET /a8F3x
+https://blink-ozo5.onrender.com/abc123
 
-Response
+When this endpoint is accessed, the service looks up the short code and returns an HTTP redirect response pointing to the stored original URL.
 
-HTTP 302 Redirect
+The browser then automatically navigates to the destination.
 
-Location: https://original-url.com
 
----
+--------------------------------------------------
 
-# Deployment
+Running Locally
 
-Blink is deployed on Render.
+Clone the repository
 
-The Spring Boot application serves both:
+git clone https://github.com/baggashivansh/Blink.git  
+cd Blink
 
-Frontend interface
-REST API
+Run the Spring Boot application
 
-Live application
+./mvnw spring-boot:run
 
-https://blink-backend-mjj3.onrender.com
+Once the server starts, open the application in your browser
 
----
+http://localhost:8080
 
-# Future Improvements
 
-Possible enhancements for Blink include:
+--------------------------------------------------
 
-Custom aliases for URLs
-Link expiration
-Click analytics
-QR code generation
-Redis caching for popular URLs
-Rate limiting for abuse protection
+Deployment
 
----
+Blink is deployed on Render using Docker.
 
-# Learning Outcomes
+Deployment workflow
 
-Building Blink demonstrates several important backend engineering concepts:
+1. The GitHub repository is connected to Render
+2. Render builds the Docker image
+3. Maven compiles the Spring Boot project
+4. A JAR file is generated
+5. The container starts the application
+6. Render assigns a public URL
 
-REST API development
-URL encoding strategies
-Database indexing
-HTTP redirects
-Full stack deployment
-Clean service architecture
+Render provides the port dynamically, so the application binds to the environment port instead of a fixed port.
 
----
+This allows the service to run correctly inside a containerized environment.
 
-# License
 
-MIT License
+--------------------------------------------------
 
----
+Tech Stack
 
-# Author
+Backend
+
+Java 21  
+Spring Boot  
+Spring Web  
+Spring Data JPA  
+
+Build Tool
+
+Maven
+
+Deployment
+
+Docker  
+Render
+
+Frontend
+
+HTML  
+CSS  
+Vanilla JavaScript
+
+
+--------------------------------------------------
+
+Project Structure
+
+Blink
+
+src  
+ └─ main  
+     ├─ java  
+     │   └─ com/shivansh/blink  
+     │       ├─ controller  
+     │       ├─ service  
+     │       ├─ repository  
+     │       └─ model  
+     │  
+     └─ resources  
+         └─ static  
+             └─ index.html  
+
+Dockerfile  
+pom.xml  
+README.md
+
+
+--------------------------------------------------
+
+Author
 
 Built by Shivansh Bagga
+
