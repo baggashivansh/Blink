@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blink URL Shortener</title>
+
+    <style>
+
+        body{
+            font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+            background:linear-gradient(-45deg,#eef2ff,#f8fafc);
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            margin:0;
+            padding:20px;
+        }
+
+        .header{
+            position:absolute;
+            top:0;
+            width:100%;
+            text-align:center;
+            padding:18px 0;
+            font-size:22px;
+            font-weight:700;
+        }
+
+        .logo{
+            background:linear-gradient(90deg,#6366f1,#3b82f6);
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .container{
+            background:white;
+            padding:40px;
+            border-radius:16px;
+            width:90%;
+            max-width:420px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.1);
+            text-align:center;
+        }
+
+        .container h1{
+            margin-bottom:25px;
+        }
+
+        input{
+            width:100%;
+            padding:12px;
+            border-radius:8px;
+            border:1px solid #ddd;
+            margin-bottom:12px;
+            font-size:14px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:8px;
+            background:linear-gradient(90deg,#6366f1,#3b82f6);
+            color:white;
+            font-weight:600;
+            cursor:pointer;
+        }
+
+        button:disabled{
+            opacity:0.6;
+            cursor:not-allowed;
+        }
+
+        .spinner{
+            border:4px solid #eee;
+            border-top:4px solid #6366f1;
+            border-radius:50%;
+            width:30px;
+            height:30px;
+            margin:20px auto;
+            animation:spin 1s linear infinite;
+            display:none;
+        }
+
+        @keyframes spin{
+            0%{transform:rotate(0deg);}
+            100%{transform:rotate(360deg);}
+        }
+
+        .result-box{
+            margin-top:20px;
+            display:none;
+        }
+
+        .link-box{
+            display:flex;
+            align-items:center;
+            border:1px solid #ddd;
+            border-radius:8px;
+            overflow:hidden;
+        }
+
+        .link-box input{
+            border:none;
+            flex:1;
+            padding:10px;
+            font-size:14px;
+            margin:0;
+        }
+
+        .copy-btn{
+            background:#10b981;
+            border:none;
+            color:white;
+            padding:10px 14px;
+            cursor:pointer;
+        }
+
+        .copied{
+            color:#10b981;
+            font-size:13px;
+            margin-top:6px;
+            display:none;
+        }
+
+        footer{
+            margin-top:30px;
+            font-size:13px;
+            color:#666;
+            text-align:center;
+        }
+
+        @media (max-width:480px){
+
+            .container{
+                padding:30px 22px;
+            }
+
+            .header{
+                font-size:20px;
+            }
+
+            .container h1{
+                font-size:20px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <span class="logo">Blink</span>
+</div>
+
+<div class="container">
+
+    <h1>Shorten your URL</h1>
+
+    <input id="urlInput" type="url" placeholder="Paste your long URL here"/>
+    <input id="aliasInput" placeholder="Custom alias (optional) e.g. youtube"/>
+
+    <button id="shortenBtn" onclick="shortenUrl()">Shorten URL</button>
+
+    <div class="spinner" id="spinner"></div>
+
+    <div class="result-box" id="resultBox">
+
+        <div class="link-box">
+            <input id="shortLinkInput" readonly>
+            <button class="copy-btn" onclick="copyLink()">📋</button>
+        </div>
+
+        <div class="copied" id="copiedMsg">Copied to clipboard ✔</div>
+
+    </div>
+
+</div>
+
+<footer>
+    © 2026 Blink • Built by <strong>Shivansh Bagga</strong>
+</footer>
+
+<script>
+
+    document.getElementById("urlInput").addEventListener("keypress",function(e){
+        if(e.key==="Enter"){
+            shortenUrl();
+        }
+    });
+
+    async function shortenUrl(){
+
+        const urlInput=document.getElementById("urlInput");
+        const aliasInput=document.getElementById("aliasInput");
+
+        const longUrl=urlInput.value.trim();
+        const alias=aliasInput.value.trim();
+
+        const spinner=document.getElementById("spinner");
+        const resultBox=document.getElementById("resultBox");
+        const button=document.getElementById("shortenBtn");
+
+        if(!longUrl){
+            alert("Please enter a URL");
+            return;
+        }
+
+        button.disabled=true;
+        button.innerText="Shortening...";
+        spinner.style.display="block";
+        resultBox.style.display="none";
+
+        try{
+
+            let apiUrl="/api/shorten?url="+encodeURIComponent(longUrl);
+
+            if(alias){
+                apiUrl+="&customCode="+encodeURIComponent(alias);
+            }
+
+            const response=await fetch(apiUrl,{
+                method:"POST"
+            });
+
+            const data=await response.json();
+
+            if(!response.ok){
+                throw new Error(data.message || "Server error");
+            }
+
+            /* Correct redirect link */
+            const shortLink=window.location.origin+"/"+data.shortCode;
+
+            document.getElementById("shortLinkInput").value=shortLink;
+
+            resultBox.style.display="block";
+
+            copyLink();
+
+            urlInput.value="";
+            aliasInput.value="";
+
+        }catch(error){
+
+            alert(error.message || "Error shortening URL");
+
+        }
+
+        spinner.style.display="none";
+        button.disabled=false;
+        button.innerText="Shorten URL";
+
+    }
+
+    function copyLink(){
+
+        const linkInput=document.getElementById("shortLinkInput");
+        const msg=document.getElementById("copiedMsg");
+
+        navigator.clipboard.writeText(linkInput.value);
+
+        msg.style.display="block";
+
+        setTimeout(()=>{
+            msg.style.display="none";
+        },2000);
+
+    }
+
+</script>
+
+</body>
+</html>
