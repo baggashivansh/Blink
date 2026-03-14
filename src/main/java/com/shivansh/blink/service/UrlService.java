@@ -13,13 +13,24 @@ public class UrlService {
 
     private final UrlRepository urlRepository;
 
+    private static final String CHARSET =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    private static final int CODE_LENGTH = 6;
+
+    private final Random random = new Random();
+
     public UrlService(UrlRepository urlRepository) {
         this.urlRepository = urlRepository;
     }
 
     public String shortenUrl(String originalUrl) {
 
-        String shortCode = generateCode();
+        String shortCode;
+
+        do {
+            shortCode = generateCode();
+        } while (urlRepository.findByShortCode(shortCode).isPresent());
 
         Url url = new Url(originalUrl, shortCode);
 
@@ -33,8 +44,11 @@ public class UrlService {
         Optional<Url> urlOptional = urlRepository.findByShortCode(shortCode);
 
         urlOptional.ifPresent(url -> {
-            url.setClickCount(url.getClickCount() + 1);
+
+            url.incrementClicks();
+
             urlRepository.save(url);
+
         });
 
         return urlOptional;
@@ -55,14 +69,10 @@ public class UrlService {
 
     private String generateCode() {
 
-        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-        Random random = new Random();
-
         StringBuilder code = new StringBuilder();
 
-        for (int i = 0; i < 6; i++) {
-            code.append(chars.charAt(random.nextInt(chars.length())));
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            code.append(CHARSET.charAt(random.nextInt(CHARSET.length())));
         }
 
         return code.toString();

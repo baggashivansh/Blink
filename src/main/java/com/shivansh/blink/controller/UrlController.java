@@ -3,6 +3,9 @@ package com.shivansh.blink.controller;
 import com.shivansh.blink.dto.UrlStats;
 import com.shivansh.blink.model.Url;
 import com.shivansh.blink.service.UrlService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,18 +23,27 @@ public class UrlController {
     }
 
     @PostMapping("/api/shorten")
-    public Map<String, String> shorten(@RequestBody Map<String, String> request) {
+    public Map<String, String> shorten(
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
 
         String originalUrl = request.get("url");
 
         String code = urlService.shortenUrl(originalUrl);
 
+        String baseUrl =
+                httpRequest.getScheme() + "://" + httpRequest.getServerName();
+
+        if (httpRequest.getServerPort() != 80 && httpRequest.getServerPort() != 443) {
+            baseUrl += ":" + httpRequest.getServerPort();
+        }
+
         return Map.of(
-                "shortUrl", "http://localhost:8080/" + code
+                "shortUrl", baseUrl + "/" + code
         );
     }
 
-    @GetMapping("/{code}")
+    @GetMapping("/{code:[a-zA-Z0-9]+}")
     public ResponseEntity<Void> redirect(@PathVariable String code) {
 
         Optional<Url> urlOptional = urlService.getOriginalUrl(code);
@@ -41,7 +53,7 @@ public class UrlController {
         }
 
         return ResponseEntity
-                .status(302)
+                .status(301)
                 .location(URI.create(urlOptional.get().getOriginalUrl()))
                 .build();
     }

@@ -25,8 +25,6 @@
             justify-content:center;
             padding:20px;
 
-            /* soft animated background */
-
             background:linear-gradient(-45deg,#eef2ff,#f8fafc,#e0e7ff,#f1f5ff);
             background-size:400% 400%;
             animation:bgFlow 12s ease infinite;
@@ -38,19 +36,6 @@
             100%{background-position:0% 50%;}
         }
 
-        /* page fade in */
-
-        body{
-            animation:fadeIn .6s ease;
-        }
-
-        @keyframes fadeIn{
-            from{opacity:0; transform:translateY(10px);}
-            to{opacity:1; transform:translateY(0);}
-        }
-
-        /* logo */
-
         .logo{
             font-size:48px;
             font-weight:800;
@@ -61,8 +46,6 @@
             -webkit-background-clip:text;
             -webkit-text-fill-color:transparent;
         }
-
-        /* card */
 
         .container{
 
@@ -78,23 +61,13 @@
             box-shadow:0 20px 40px rgba(0,0,0,.08);
 
             text-align:center;
-
-            transition:transform .2s ease;
         }
-
-        .container:hover{
-            transform:translateY(-3px);
-        }
-
-        /* heading */
 
         .container h1{
             font-size:24px;
             margin-bottom:26px;
             color:#333;
         }
-
-        /* input */
 
         input{
 
@@ -106,17 +79,7 @@
 
             font-size:15px;
             margin-bottom:14px;
-
-            transition:border .2s, box-shadow .2s;
         }
-
-        input:focus{
-            outline:none;
-            border:1px solid #6366f1;
-            box-shadow:0 0 0 2px rgba(99,102,241,.15);
-        }
-
-        /* button */
 
         button{
 
@@ -133,23 +96,7 @@
             font-size:15px;
 
             cursor:pointer;
-
-            transition:transform .15s ease, box-shadow .15s ease;
         }
-
-        button:hover{
-
-            transform:translateY(-1px);
-
-            box-shadow:0 8px 18px rgba(0,0,0,.12);
-        }
-
-        button:disabled{
-            opacity:.6;
-            cursor:not-allowed;
-        }
-
-        /* spinner */
 
         .spinner{
 
@@ -171,8 +118,6 @@
         @keyframes spin{
             to{transform:rotate(360deg);}
         }
-
-        /* result */
 
         .result-box{
             margin-top:20px;
@@ -212,46 +157,13 @@
             color:white;
 
             cursor:pointer;
-
-            transition:background .2s;
         }
-
-        .copy-btn:hover{
-            background:#059669;
-        }
-
-        .copied{
-
-            color:#10b981;
-
-            font-size:13px;
-
-            margin-top:8px;
-
-            display:none;
-        }
-
-        /* footer */
 
         footer{
             margin-top:36px;
             font-size:13px;
             color:#6b7280;
             text-align:center;
-        }
-
-        /* mobile */
-
-        @media(max-width:480px){
-
-            .logo{
-                font-size:38px;
-            }
-
-            .container{
-                padding:28px 20px;
-            }
-
         }
 
     </style>
@@ -276,102 +188,74 @@
 
         <div class="link-box">
             <input id="shortLinkInput" readonly>
-            <button class="copy-btn" onclick="copyLink()">📋</button>
+            <button class="copy-btn" onclick="copyLink()">Copy</button>
         </div>
-
-        <div class="copied" id="copiedMsg">Copied to clipboard ✔</div>
 
     </div>
 
 </div>
 
 <footer>
-    © 2026 Blink • Built by <strong>Shivansh Bagga</strong>
+    © 2026 Blink • Built by Shivansh Bagga
 </footer>
 
 <script>
 
-    document.getElementById("urlInput").addEventListener("keypress",function(e){
-        if(e.key==="Enter"){
-            shortenUrl();
-        }
-    });
-
     async function shortenUrl(){
 
-        const urlInput=document.getElementById("urlInput");
-        const longUrl=urlInput.value.trim();
+        const input=document.getElementById("urlInput");
+        const url=input.value.trim();
 
-        const spinner=document.getElementById("spinner");
-        const resultBox=document.getElementById("resultBox");
-        const button=document.getElementById("shortenBtn");
-
-        if(!longUrl){
+        if(!url){
             alert("Please enter a URL");
             return;
         }
 
-        button.disabled=true;
-        button.innerText="Shortening...";
+        const spinner=document.getElementById("spinner");
+        const result=document.getElementById("resultBox");
+        const button=document.getElementById("shortenBtn");
+
         spinner.style.display="block";
-        resultBox.style.display="none";
+        button.disabled=true;
 
         try{
 
             const response=await fetch("/api/shorten",{
-
                 method:"POST",
-
                 headers:{
                     "Content-Type":"application/json"
                 },
-
-                body:JSON.stringify({
-                    url:longUrl
-                })
-
+                body:JSON.stringify({url})
             });
-
-            const data=await response.json();
 
             if(!response.ok){
                 throw new Error("Server error");
             }
 
+            const data=await response.json();
+
             document.getElementById("shortLinkInput").value=data.shortUrl;
 
-            resultBox.style.display="block";
+            result.style.display="block";
 
-            copyLink();
+        }catch(err){
 
-            urlInput.value="";
-
-        }catch(error){
-
-            alert("Error shortening URL");
+            alert("Failed to shorten URL");
 
         }
 
         spinner.style.display="none";
-
         button.disabled=false;
-
-        button.innerText="Shorten URL";
 
     }
 
     function copyLink(){
 
-        const linkInput=document.getElementById("shortLinkInput");
-        const msg=document.getElementById("copiedMsg");
+        const input=document.getElementById("shortLinkInput");
 
-        navigator.clipboard.writeText(linkInput.value);
+        navigator.clipboard.writeText(input.value);
 
-        msg.style.display="block";
-
-        setTimeout(()=>{
-            msg.style.display="none";
-        },2000);
+        alert("Copied!");
 
     }
 

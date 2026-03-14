@@ -14,18 +14,25 @@ public class Url {
     @Column(nullable = false)
     private String originalUrl;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String shortCode;
 
+    @Column(nullable = false)
     private int clickCount = 0;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
 
     public Url() {}
 
     public Url(String originalUrl, String shortCode) {
         this.originalUrl = originalUrl;
         this.shortCode = shortCode;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -52,8 +59,8 @@ public class Url {
         return clickCount;
     }
 
-    public void setClickCount(int clickCount) {
-        this.clickCount = clickCount;
+    public void incrementClicks() {
+        this.clickCount++;
     }
 
     public LocalDateTime getCreatedAt() {
