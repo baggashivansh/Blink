@@ -1,176 +1,126 @@
-Blink
+# Blink
 
-A Production Style URL Shortener
+A minimal production style URL shortener built with Java and Spring Boot.
 
----
+Blink converts long URLs into short, shareable links and redirects users to the original destination instantly.
 
-Overview
+Example:
 
-Blink is a production inspired URL shortening service designed to transform long, complex URLs into short, clean, shareable links.
-
-Instead of sharing something like:
+Long URL
 
 https://example.com/products/electronics/mobile-phones/apple/iphone-15-pro-max?ref=homepage&campaign=spring_sale
 
-Blink converts it into something simple:
+Shortened URL
 
-blink.ly/a7F3x
+https://blink-backend-mjj3.onrender.com/a7F3x
 
-When a user opens the shortened link, Blink quickly redirects them to the original destination.
-
-While URL shorteners appear simple on the surface, building one properly introduces several real world backend engineering concepts including hash generation, database indexing, analytics tracking, scalability, and API design.
-
-Blink is designed as a backend focused system that mirrors how services like Bitly or TinyURL operate internally.
+When a user opens the short link, Blink performs a fast redirect to the original URL.
 
 ---
 
-Problem Statement
+# Live Demo
 
-Modern URLs are often extremely long and difficult to share across platforms such as:
-
-- Social media
-- SMS
-- Email
-- QR codes
-- Marketing campaigns
-
-Long URLs also look messy and reduce click through rates.
-
-A URL shortening system solves this by:
-
-1. Generating a short unique code
-2. Mapping that code to the original URL
-3. Redirecting users instantly when the short link is visited
-
-Blink aims to implement this entire system with production style architecture.
+https://blink-backend-mjj3.onrender.com
 
 ---
 
-Core Features
+# Overview
 
-1 Short URL Generation
+Blink is a backend focused project designed to demonstrate how URL shortening services such as Bitly or TinyURL work internally.
 
-Users can submit any long URL and Blink will generate a short code.
+Although URL shorteners appear simple, they involve several important backend engineering ideas including:
 
-Example:
+Unique code generation
+Database indexing
+Fast redirect systems
+REST API design
+Service deployment
 
-Input
-
-https://github.com/shivanshbagga/java-backend-roadmap
-
-Output
-
-blink.ly/X8gT2
-
-Each short code uniquely maps to one original URL.
+Blink implements the core mechanics behind these systems using a clean Spring Boot architecture.
 
 ---
 
-2 Fast Redirect Service
+# Features
 
-When someone visits:
+## URL Shortening
 
-blink.ly/X8gT2
-
-Blink will:
-
-1. Look up the short code in the database
-2. Retrieve the original URL
-3. Redirect the user using HTTP 302 or 301 response
-
-This process must happen within milliseconds.
-
----
-
-3 Custom Alias Support
-
-Users can choose their own short code.
-
-Example:
-
-blink.ly/portfolio
-blink.ly/resume
-blink.ly/github
-
-If the alias is already taken, Blink rejects the request.
-
----
-
-4 Link Expiration
-
-Users can create links that expire automatically.
-
-Example use cases:
-
-- Temporary documents
-- Interview links
-- Limited promotions
+Users can submit a long URL and Blink generates a unique short code.
 
 Example
 
-blink.ly/job-link
-Expires in: 7 days
+Input
 
-After expiration the link returns 404 Not Found.
+https://github.com/shivanshbagga
 
----
+Output
 
-5 Click Analytics
+https://blink-backend-mjj3.onrender.com/a8F3x
 
-Blink records every time a short link is visited.
-
-Analytics may include:
-
-- Total clicks
-- Timestamp
-- IP address
-- User agent
-- Geographic location (optional)
-
-Example analytics
-
-Short URL: blink.ly/X8gT2
-Total Clicks: 1,245
-Top Country: India
-Last Click: 2026-03-06 22:14
+Each short code maps to exactly one original URL.
 
 ---
 
-System Architecture
+## Fast Redirect
 
-Blink follows a backend service architecture.
+When a user visits a shortened link:
+
+https://blink-backend-mjj3.onrender.com/a8F3x
+
+Blink performs the following steps:
+
+1. Extract the short code
+2. Look up the original URL in the database
+3. Redirect the user using HTTP redirect
+
+This lookup happens in milliseconds.
+
+---
+
+## Clean Web Interface
+
+Blink includes a minimal frontend interface where users can:
+
+Paste a long URL
+Generate a short link
+Copy the shortened URL instantly
+
+The frontend is served directly by the Spring Boot server.
+
+---
+
+# System Architecture
+
+Blink uses a simple service architecture.
 
 Client
-   |
-   v
-REST API
-   |
-   v
-Application Service
-   |
-   v
+↓
+Spring Boot API
+↓
 Database
 
 Flow: Creating a Short Link
 
-User → POST /shorten
-     → Validate URL
-     → Generate short code
-     → Store mapping
-     → Return short URL
+User → POST /api/shorten
+↓
+Validate URL
+↓
+Generate short code
+↓
+Store mapping in database
+↓
+Return short URL
 
----
-
-Flow: Redirecting a Link
+Flow: Redirecting
 
 User → GET /{shortCode}
-     → Lookup database
-     → Fetch original URL
-     → Redirect
+↓
+Lookup short code in database
+↓
+Redirect to original URL
 
 ---
 
-Technology Stack
+# Technology Stack
 
 Backend
 
@@ -183,104 +133,68 @@ Database
 
 MySQL
 
-Optional Additions
+Deployment
 
-Redis (caching popular URLs)
-Docker (containerization)
-Nginx (reverse proxy)
+Render
+
+Frontend
+
+HTML
+CSS
+Vanilla JavaScript
 
 ---
 
-Database Design
+# Project Structure
+
+blink
+src
+└─ main
+└─ java
+└─ controller
+└─ service
+└─ repository
+└─ model
+
+resources
+└─ static
+└─ index.html
+
+The static folder allows Spring Boot to serve the frontend directly.
+
+---
+
+# Database Design
 
 URL Table
 
-Field| Type| Description
-id| BIGINT| Primary key
-original_url| TEXT| The full URL
-short_code| VARCHAR| Unique generated code
-created_at| TIMESTAMP| Creation time
-expires_at| TIMESTAMP| Expiration time
-custom_alias| BOOLEAN| Whether alias is custom
+Field | Type | Description
+id | BIGINT | Primary key
+original_url | TEXT | Original long URL
+short_code | VARCHAR | Generated short code
+created_at | TIMESTAMP | Creation time
+click_count | INT | Number of visits
 
-Indexing is critical for fast lookups.
-
-INDEX(short_code)
+An index on short_code enables fast lookup during redirects.
 
 ---
 
-Click Analytics Table
-
-Field| Type| Description
-id| BIGINT| Primary key
-url_id| BIGINT| Reference to URL
-clicked_at| TIMESTAMP| Click time
-ip_address| VARCHAR| Visitor IP
-user_agent| TEXT| Browser info
-
----
-
-Short Code Generation Strategies
-
-Generating short codes is the most interesting engineering problem here.
-
-Option 1 Random Base62
-
-Characters:
-
-a-z
-A-Z
-0-9
-
-Example code
-
-a8F3xZ
-
-Advantages
-
-- Short
-- Hard to guess
-- High capacity
-
----
-
-Option 2 Hash Based
-
-Hash the URL and convert to Base62.
-
-Example
-
-MD5(URL) → Base62
-
----
-
-Option 3 Incremental ID Encoding
-
-ID: 1024
-Base62(ID): g8
-
-This approach is commonly used in production systems.
-
----
-
-API Endpoints
+# API Endpoints
 
 Create Short URL
 
-POST /api/urls
+POST /api/shorten
 
 Request
 
 {
-  "url": "https://example.com/article",
-  "customAlias": "my-article",
-  "expiresAt": "2026-04-01"
+"url": "https://example.com/article"
 }
 
 Response
 
 {
-  "shortUrl": "blink.ly/my-article"
+"shortUrl": "https://blink-backend-mjj3.onrender.com/a8F3x"
 }
 
 ---
@@ -296,122 +210,58 @@ GET /a8F3x
 Response
 
 HTTP 302 Redirect
+
 Location: https://original-url.com
 
 ---
 
-Get Analytics
+# Deployment
 
-GET /api/urls/{shortCode}/analytics
+Blink is deployed on Render.
 
-Response
+The Spring Boot application serves both:
 
-{
-  "totalClicks": 324,
-  "lastClicked": "2026-03-06T21:40:00"
-}
+Frontend interface
+REST API
 
----
+Live application
 
-Example Project Structure
-
-blink
- ├── controller
- │     └── UrlController.java
- │
- ├── service
- │     └── UrlService.java
- │
- ├── repository
- │     └── UrlRepository.java
- │
- ├── model
- │     └── Url.java
- │
- ├── analytics
- │     └── ClickEvent.java
- │
- └── util
-       └── Base62Encoder.java
-
-This structure keeps the codebase clean and maintainable.
+https://blink-backend-mjj3.onrender.com
 
 ---
 
-Performance Considerations
+# Future Improvements
 
-Database Indexing
+Possible enhancements for Blink include:
 
-Without an index on "short_code", redirects become extremely slow.
-
-Indexes allow constant time lookup.
-
----
-
-Caching
-
-Popular URLs can be cached using Redis.
-
-Flow
-
-Check Cache
-   ↓
-Cache Hit → Redirect
-   ↓
-Cache Miss → Database → Store in Cache
-
-This drastically improves performance.
+Custom aliases for URLs
+Link expiration
+Click analytics
+QR code generation
+Redis caching for popular URLs
+Rate limiting for abuse protection
 
 ---
 
-Rate Limiting
+# Learning Outcomes
 
-Protect the API from abuse.
+Building Blink demonstrates several important backend engineering concepts:
 
-Example
-
-100 requests per minute per IP
-
----
-
-Future Enhancements
-
-Blink can evolve into a much more powerful platform.
-
-Possible upgrades:
-
-- QR code generation
-- Password protected links
-- Link preview pages
-- Link editing
-- Geo based analytics
-- Distributed ID generation
-- Multi region deployment
+REST API development
+URL encoding strategies
+Database indexing
+HTTP redirects
+Full stack deployment
+Clean service architecture
 
 ---
 
-Learning Outcomes
-
-Building Blink teaches several important backend engineering concepts:
-
-- REST API design
-- URL encoding strategies
-- Database indexing
-- System scalability
-- Analytics tracking
-- Caching strategies
-- Clean backend architecture
-
-It is an excellent intermediate backend project that demonstrates real world engineering thinking.
-
----
-
-License
+# License
 
 MIT License
 
 ---
 
-Author
+# Author
 
 Built by Shivansh Bagga
