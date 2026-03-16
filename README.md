@@ -31,6 +31,9 @@ https://github.com/baggashivansh/Blink
 
 You can open the live service and generate short URLs directly from the interface.
 
+If the backend service is inactive, the first request may take a few seconds while the server wakes up because it runs on a free hosting tier.
+
+
 
 --------------------------------------------------
 
